@@ -1,0 +1,1752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yomi's Retro Desktop Gallery</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+    <style>
+        /* Your existing CSS remains unchanged */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        .terminal-content, #terminal-input, .window-content {
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f8c6ce, #e2e1ab);
+            font-family: 'VT323', monospace;
+            font-size: 1.3rem;
+            color: #5a3d5c;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        :root {
+            --pink: #f8c6ce;
+            --coral: #f3ac94;
+            --yellow: #e2e1ab;
+            --cream: #feece9;
+            --dark: #5a3d5c;
+        }
+        
+        .window {
+            background: var(--cream);
+            margin-bottom: 30px;
+            overflow: hidden;
+            border: 2px solid var(--dark);
+            position: absolute;
+            z-index: 1;
+            box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            width: 80%;
+            max-width: 800px;
+        }
+        
+        .window.maximized {
+            width: 100% !important;
+            height: calc(100% - 40px) !important;
+            top: 0 !important;
+            left: 0 !important;
+            transform: none !important;
+            z-index: 100 !important;
+            border-radius: 0 !important;
+            margin: 0 !important;
+            max-width: none !important;
+        }
+        
+        .title-bar {
+            background: var(--coral);
+            padding: 4px 6px;
+            display: flex;
+            align-items: center;
+            position: relative;
+            cursor: move;
+            color: var(--dark);
+            font-size: 1.1rem;
+            height: 25px;
+            border-bottom: 2px solid var(--dark);
+            border-radius: 6px 6px 0 0;
+        }
+        
+        .window-icon {
+            width: 16px;
+            height: 16px;
+            margin-right: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+        
+        .window-controls {
+            display: flex;
+            gap: 4px;
+            margin-left: auto;
+        }
+        
+        .control-btn {
+            width: 16px;
+            height: 14px;
+            border: 2px solid var(--dark);
+            background: var(--cream);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: var(--dark);
+            font-weight: bold;
+            border-radius: 3px;
+        }
+        
+        .control-btn:active {
+            background: #e9d8d8;
+        }
+        
+        .close::after { content: '✕'; font-size: 10px; margin-top: -2px; }
+        .minimize::after { content: '_'; font-size: 12px; margin-top: -5px; }
+        .maximize::after { content: '□'; font-size: 8px; margin-top: -1px; }
+        
+        .title-text {
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            color: var(--dark);
+            font-size: 1.1rem;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .window-content {
+            padding: 15px;
+            position: relative;
+            height: calc(100% - 25px);
+            overflow-y: auto;
+            background: var(--cream);
+            border-radius: 0 0 6px 6px;
+        }
+        
+        .window.header {
+            top: 5%;
+            left: 5%;
+        }
+        
+        .header .title-bar {
+            background: var(--pink);
+        }
+        
+        .header-content {
+            padding: 20px;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            color: var(--dark);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+        
+        .subtitle {
+            font-size: 1.6rem;
+            color: var(--dark);
+            margin-bottom: 20px;
+        }
+        
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+        }
+        
+        .nav-item {
+            background: var(--yellow);
+            border: 2px solid var(--dark);
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-radius: 5px;
+            box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.15);
+            background: var(--pink);
+        }
+        
+        .nav-item i {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .content-card {
+            background: var(--yellow);
+            border: 2px solid var(--dark);
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+        
+        .content-card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 12px;
+            color: var(--dark);
+            border-bottom: 2px solid var(--dark);
+            padding-bottom: 6px;
+        }
+        
+        .window.footer {
+            left: 5%;
+            width: 90%;
+        }
+        
+        .footer .title-bar {
+            background: var(--pink);
+        }
+        
+        .footer-content {
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .social-links a {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background: var(--coral);
+            border-radius: 50%;
+            border: 2px solid var(--dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            text-decoration: none;
+            color: var(--dark);
+            transition: all 0.3s ease;
+        }
+        
+        .social-links a:hover {
+            transform: translateY(-5px);
+            background: var(--pink);
+        }
+        
+        .window.terminal {
+            top: 20%;
+            left: 55%;
+            width: 40%;
+            max-width: 600px;
+        }
+        
+        .terminal-container {
+            background: var(--dark);
+            color: #e2e1ab;
+            font-family: 'VT323', monospace;
+            padding: 15px;
+            height: calc(100% - 20px);
+            overflow-y: auto;
+            border-radius: 5px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .terminal-output {
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .terminal-line {
+            margin-bottom: 8px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        
+        .terminal-prompt {
+            color: #f3ac94;
+        }
+        
+        .terminal-input {
+            display: flex;
+            align-items: center;
+            background: var(--dark);
+            color: #e2e1ab;
+            padding: 8px 0 0 0;
+            border-top: 1px solid rgba(226, 225, 171, 0.2);
+            margin-top: 8px;
+        }
+        
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            position: relative;
+            width: 100%;
+        }
+        
+        #terminal-input {
+            background: transparent;
+            border: none;
+            color: #e2e1ab;
+            font-family: 'VT323', monospace;
+            font-size: 1.3rem;
+            width: 100%;
+            outline: none;
+            caret-color: transparent;
+            flex: 1;
+            padding: 0;
+        }
+        
+        .terminal-cursor {
+            position: absolute;
+            width: 8px;
+            height: 16px;
+            background: #f3ac94;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        
+        .pixel {
+            position: absolute;
+            background: var(--dark);
+            z-index: 0;
+        }
+        
+        .pixel-1 { width: 5px; height: 5px; top: 10%; left: 5%; }
+        .pixel-2 { width: 5px; height: 5px; top: 15%; right: 10%; }
+        .pixel-3 { width: 5px; height: 5px; bottom: 20%; left: 15%; }
+        .pixel-4 { width: 5px; height: 5px; bottom: 10%; right: 5%; }
+        
+        .desktop-icons {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            z-index: 0;
+        }
+        
+        .desktop-icon {
+            width: 80px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .desktop-icon:hover {
+            transform: translateY(-3px);
+        }
+        
+        .desktop-icon .icon {
+            width: 48px;
+            height: 48px;
+            font-size: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 5px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        
+        .desktop-icon span {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--dark);
+            padding: 2px 4px;
+        }
+        
+        .taskbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40px;
+            background: var(--coral);
+            border-top: 2px solid var(--dark);
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            z-index: 1000;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .start-button {
+            height: 30px;
+            padding: 0 10px;
+            background: var(--yellow);
+            border: 2px solid var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            box-shadow: 2px 2px 0 rgba(0,0,0,0.1);
+        }
+        
+        .start-button:active {
+            transform: translate(1px, 1px);
+            box-shadow: 1px 1px 0 rgba(0,0,0,0.1);
+        }
+        
+        .taskbar-items {
+            display: flex;
+            gap: 5px;
+            margin-left: 10px;
+            height: 100%;
+            align-items: center;
+        }
+        
+        .taskbar-item {
+            height: 30px;
+            padding: 0 15px;
+            background: var(--yellow);
+            border: 2px solid var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border-radius: 4px;
+            box-shadow: 2px 2px 0 rgba(0,0,0,0.1);
+        }
+        
+        .taskbar-item:active {
+            transform: translate(1px, 1px);
+            box-shadow: 1px 1px 0 rgba(0,0,0,0.1);
+        }
+        
+        .taskbar-clock {
+            margin-left: auto;
+            padding: 0 10px;
+            height: 30px;
+            background: var(--pink);
+            border: 2px solid var(--dark);
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            border-radius: 4px;
+            box-shadow: 2px 2px 0 rgba(0,0,0,0.1);
+        }
+        
+        .background-text-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 8rem;
+            opacity: 0.1;
+            color: var(--dark);
+            z-index: 0;
+            pointer-events: none;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+        
+        .background-cursor {
+            display: inline-block;
+            width: 15px;
+            height: 80px;
+            background-color: rgba(90, 61, 92, 0.3);
+            margin-left: 10px;
+            animation: blink 1s infinite;
+        }
+        
+        .fetch-output {
+            border: 1px solid var(--coral);
+            padding: 10px;
+            background: rgba(0,0,0,0.1);
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .fetch-line {
+            margin-bottom: 5px;
+            display: flex;
+        }
+        
+        .fetch-label {
+            font-weight: bold;
+            width: 70px;
+            display: inline-block;
+        }
+        
+        .fetch-separator {
+            margin-right: 5px;
+        }
+        
+        .color-block {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            border: 1px solid var(--dark);
+            margin-right: 3px;
+        }
+        
+        /* Photo gallery styles */
+        .photo-container {
+            margin-top: 20px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Horizontal layout for non-maximized window */
+        .photo-scroll {
+            display: flex;
+            overflow-x: auto;
+            gap: 10px;
+            padding: 5px 0;
+            scrollbar-width: thin;
+            scrollbar-color: var(--coral) var(--cream);
+        }
+        
+        .photo-scroll::-webkit-scrollbar {
+            height: 8px;
+        }
+        
+        .photo-scroll::-webkit-scrollbar-track {
+            background: var(--cream);
+            border-radius: 4px;
+        }
+        
+        .photo-scroll::-webkit-scrollbar-thumb {
+            background: var(--coral);
+            border-radius: 4px;
+        }
+        
+        /* Grid layout for maximized window */
+        .photo-grid {
+            display: none;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 15px;
+            flex: 1;
+            min-height: 0;
+            padding: 5px;
+        }
+        
+        .window.maximized .photo-grid {
+            display: grid;
+        }
+        
+        .window.maximized .photo-scroll {
+            display: none;
+        }
+        
+        .photo-item {
+            background: var(--cream);
+            border: 2px solid var(--dark);
+            border-radius: 5px;
+            box-shadow: 3px 3px 0 rgba(0,0,0,0.1);
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .photo-scroll .photo-item {
+            width: 180px;
+            height: 120px;
+            flex-shrink: 0;
+        }
+        
+        .photo-grid .photo-item {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .photo-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 5px 5px 0 rgba(0,0,0,0.15);
+        }
+        
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        
+        /* Photo modal styles */
+        .photo-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .photo-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+        }
+        
+        .modal-content img {
+            max-width: 100%;
+            max-height: 80vh;
+            border: 3px solid var(--coral);
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            background: var(--coral);
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--dark);
+        }
+        
+        /* Remove bullets from lists */
+        .content-card ul {
+            list-style-type: none;
+            padding-left: 0;
+            margin-top: 10px;
+        }
+        
+        .content-card li {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .content-card li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--coral);
+        }
+        
+        /* Help command styles */
+        .help-command {
+            display: flex;
+            margin-bottom: 5px;
+        }
+        
+        .command-name {
+            width: 100px;
+            color: #f3ac94;
+            font-weight: bold;
+        }
+        
+        .command-desc {
+            flex: 1;
+        }
+        
+        /* Email window styles */
+        .email-container {
+            background: var(--dark);
+            color: #e2e1ab;
+            font-family: 'VT323', monospace;
+            padding: 15px;
+            height: calc(100% - 20px);
+            overflow-y: auto;
+            border-radius: 5px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .email-output {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 10px;
+        }
+        
+        .email-line {
+            margin-bottom: 8px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        
+        .email-prompt {
+            color: #f3ac94;
+        }
+        
+        .email-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .email-input {
+            background: transparent;
+            border: 1px solid #f3ac94;
+            color: #e2e1ab;
+            font-family: 'VT323', monospace;
+            font-size: 1.3rem;
+            padding: 5px;
+            outline: none;
+            border-radius: 3px;
+        }
+        
+        .email-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .email-button {
+            background: var(--coral);
+            border: 2px solid var(--dark);
+            color: var(--dark);
+            font-family: 'VT323', monospace;
+            font-size: 1.3rem;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            align-self: flex-start;
+        }
+        
+        .email-button:hover {
+            background: var(--pink);
+        }
+        
+        .email-button:active {
+            transform: translate(1px, 1px);
+        }
+        
+        .email-status {
+            margin-top: 10px;
+            color: #f3ac94;
+        }
+        
+        /* Updated arrow styles */
+        .arrow-wrapper {
+            position: absolute;
+            top: 50px; /* Positioned above the Welcome folder */
+            left: 120px; /* Positioned to the right of Welcome folder */
+            z-index: 500;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .bouncing-arrow {
+            font-size: 3rem;
+            color: #5a3d5c;
+            animation: bounceLeft 1.5s infinite, pulse 1.5s infinite;
+            opacity: 0.9;
+            text-shadow: 0 0 5px rgba(226, 225, 171, 0.7);
+            pointer-events: none;
+            z-index: 500;
+        }
+        
+        .bouncing-text {
+            position: absolute;
+            font-family: 'VT323', monospace;
+            font-size: 1.5rem;
+            color: #5a3d5c;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(226, 225, 171, 0.7);
+            white-space: nowrap;
+            animation: pulse 1.5s infinite;
+            pointer-events: none;
+            top: 40px; /* Position text below arrow */
+            left: -10px; /* Center text under arrow */
+        }
+        
+        @keyframes bounceLeft {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(-15px); } /* Move left */
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 1200px) {
+            .window.terminal {
+                left: 50%;
+                width: 45%;
+            }
+            
+            .window.header {
+                width: 45%;
+            }
+        }
+        
+        @media (max-width: 900px) {
+            .desktop-icons {
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 15px;
+                top: 10px;
+                left: 10px;
+                max-width: 90%;
+            }
+            
+            .desktop-icon {
+                width: 70px;
+            }
+            
+            .window {
+                width: 90% !important;
+                max-width: none;
+            }
+            
+            .window.header {
+                top: 5%;
+                left: 5%;
+                height: auto;
+            }
+            
+            .window.terminal {
+                top: 40%;
+                left: 5%;
+                width: 90%;
+            }
+            
+            h1 { font-size: 2.5rem; }
+            .subtitle { font-size: 1.4rem; }
+            
+            .background-text-container {
+                font-size: 6rem;
+            }
+            .background-cursor {
+                height: 60px;
+            }
+
+            /* Mobile maximized window adjustment */
+            .window.maximized {
+                height: calc(100% - 40px) !important;
+            }
+            
+            .photo-scroll .photo-item {
+                width: 150px;
+                height: 100px;
+            }
+            
+            /* Arrow position for tablet */
+            .arrow-wrapper {
+                top: 40px;
+                left: 100px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            h1 { font-size: 2.2rem; }
+            .subtitle { font-size: 1.3rem; }
+            
+            .content-grid { grid-template-columns: 1fr; }
+            
+            .background-text-container {
+                font-size: 5rem;
+            }
+            .background-cursor {
+                height: 50px;
+            }
+            
+            .window.terminal {
+                top: 35%;
+            }
+            
+            .photo-grid {
+                grid-template-columns: repeat(2, 1fr);
+                grid-template-rows: repeat(4, 1fr);
+            }
+            
+            .photo-scroll .photo-item {
+                width: 130px;
+                height: 90px;
+            }
+            
+            /* Arrow position for mobile */
+            .arrow-wrapper {
+                top: 30px;
+                left: 80px;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .desktop-icons {
+                position: relative;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 10px;
+                margin-bottom: 20px;
+            }
+            
+            .window {
+                position: relative !important;
+                top: auto !important;
+                left: auto !important;
+                margin: 20px auto;
+                width: 95% !important;
+                transform: none !important;
+            }
+            
+            .window.header {
+                margin-top: 70px;
+            }
+            
+            .window.terminal {
+                margin-top: 20px;
+            }
+            
+            .taskbar-items {
+                display: none;
+            }
+            
+            .taskbar-clock {
+                font-size: 0.8rem;
+            }
+            
+            h1 { font-size: 2rem; }
+            .title-text { font-size: 1rem; }
+            .nav-grid { grid-template-columns: 1fr; }
+            
+            .background-text-container {
+                font-size: 4rem;
+            }
+            .background-cursor {
+                height: 40px;
+            }
+            
+            .taskbar {
+                height: 35px;
+                font-size: 0.8rem;
+            }
+            
+            .taskbar-item {
+                padding: 0 8px;
+                font-size: 0.8rem;
+            }
+
+            /* Mobile maximized window adjustment */
+            .window.maximized {
+                height: calc(100% - 35px) !important;
+            }
+            
+            .photo-grid {
+                grid-template-columns: 1fr;
+                grid-template-rows: repeat(9, 1fr);
+            }
+            
+            .photo-scroll .photo-item {
+                width: 110px;
+                height: 80px;
+            }
+            
+            .arrow-wrapper {
+                top: 20px;
+                left: 60px;
+            }
+        }
+        
+        @media (max-width: 400px) {
+            h1 { font-size: 1.8rem; }
+            .subtitle { font-size: 1.2rem; }
+            
+            .background-text-container {
+                font-size: 3rem;
+            }
+            .background-cursor {
+                height: 30px;
+            }
+            
+            .photo-scroll .photo-item {
+                width: 100px;
+                height: 70px;
+            }
+            
+            .arrow-wrapper {
+                left: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Pixel decorations -->
+    <div class="pixel pixel-1"></div>
+    <div class="pixel pixel-2"></div>
+    <div class="pixel pixel-3"></div>
+    <div class="pixel pixel-4"></div>
+    
+    <!-- Photo modal -->
+    <div class="photo-modal" id="photo-modal">
+        <div class="modal-content">
+            <span class="close-modal" id="close-modal">✕</span>
+            <img id="modal-image" src="" alt="Enlarged photo">
+        </div>
+    </div>
+    
+    <!-- Desktop background text with cursor -->
+    <div class="background-text-container">
+        <div>YOMI</div>
+        <div class="background-cursor"></div>
+    </div>
+    
+    <!-- Desktop icons with matching window icons -->
+    <div class="desktop-icons">
+        <div class="desktop-icon" id="welcome-icon" onclick="openWelcomeWindow()">
+            <div class="icon">📁</div>
+            <span>Welcome</span>
+        </div>
+        <div class="desktop-icon" onclick="openWindow('terminal')">
+            <div class="icon">⌨️</div>
+            <span>Terminal</span>
+        </div>
+    </div>
+    
+    <!-- Fixed arrow container pointing to Welcome folder -->
+    <div class="arrow-wrapper">
+        <div class="bouncing-arrow">←</div> <!-- Left-pointing arrow -->
+        <div class="bouncing-text">Click me!</div>
+    </div>
+    
+    <!-- Taskbar -->
+    <div class="taskbar">
+        <div class="start-button" id="start-button">
+            <span>Start</span>
+        </div>
+        <div class="taskbar-items">
+            <div class="taskbar-item" onclick="openWindow('header')">Home</div>
+            <div class="taskbar-item" onclick="openWindow('terminal')">Terminal</div>
+        </div>
+        <div class="taskbar-clock" id="clock">10:25 AM</div>
+    </div>
+    
+    <!-- Windows container -->
+    <div class="windows-container">
+        <!-- Windows will be added dynamically by JavaScript -->
+    </div>
+    
+    <script>
+        // Store window templates with controls on the right
+        const windowTemplates = {
+            header: `
+                <div class="window header">
+                    <div class="title-bar">
+                        <div class="window-icon">📁</div>
+                        <div class="title-text">WELCOME.EXE</div>
+                        <div class="window-controls">
+                            <div class="control-btn minimize"></div>
+                            <div class="control-btn maximize"></div>
+                            <div class="control-btn close"></div>
+                        </div>
+                    </div>
+                    <div class="window-content header-content">
+                        <h1>YOMI'S DESKTOP <3</h1>
+                        <p class="subtitle">A charming retro computing experience</p>
+                        <p>Welcome to my cozy corner of the internet! Explore using the terminal or navigation buttons.</p>
+                        <div class="content-grid" style="margin-top: 20px;">
+                            <div class="content-card">
+                                <h3>HOW TO USE</h3>
+                                <p>This interactive desktop environment lets you explore my world:</p>
+                                <ul>
+                                    <li>Click desktop icons or taskbar items to open windows</li>
+                                    <li>Drag windows by their title bars</li>
+                                    <li>Use minimize/maximize/close buttons</li>
+                                    <li>Start by using the terminal App to open windows (Type 'help' to see available commands)</li>
+
+                                </ul>
+                            </div>
+                            <div class="content-card">
+                                <h3>ABOUT THIS PROJECT</h3>
+                                <p>I created this retro desktop using HTML/CSS/JS to showcase my skills in:</p>
+                                <ul>
+                                    <li>Responsive web design</li>
+                                    <li>Interactive UI elements</li>
+                                    <li>Creative theming</li>
+                                    <li>Terminal emulation</li>
+                                </ul>
+                               
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `,
+            navigation: `
+                <div class="window">
+                    <div class="title-bar">
+                        <div class="window-icon">📁</div>
+                        <div class="title-text">NAVIGATION</div>
+                        <div class="window-controls">
+                            <div class="control-btn minimize"></div>
+                            <div class="control-btn maximize"></div>
+                            <div class="control-btn close"></div>
+                        </div>
+                    </div>
+                    <div class="window-content">
+                        <div class="nav-grid">
+                            <div class="nav-item" data-window="header">
+                                <i>🏠</i>
+                                <h3>HOME</h3>
+                            </div>
+                            <div class="nav-item" data-window="projects">
+                                <i>📁</i>
+                                <h3>PROJECTS</h3>
+                            </div>
+                            <div class="nav-item" data-window="photography">
+                                <i>📷</i>
+                                <h3>PHOTOGRAPHY</h3>
+                            </div>
+                            <div class="nav-item" data-window="about">
+                                <i>👤</i>
+                                <h3>ABOUT</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `,
+            terminal: `
+                <div class="window terminal">
+                    <div class="title-bar">
+                        <div class="window-icon">⌨️</div>
+                        <div class="title-text">TERMINAL</div>
+                        <div class="window-controls">
+                            <div class="control-btn minimize"></div>
+                            <div class="control-btn maximize"></div>
+                            <div class="control-btn close"></div>
+                        </div>
+                    </div>
+                    <div class="window-content">
+                        <div class="terminal-container">
+                            <div class="terminal-output" id="terminal-output">
+                                <div class="terminal-line"><span class="terminal-prompt">></span> Welcome to Yomi's Retro Terminal v1.0</div>
+                                <div class="terminal-line"><span class="terminal-prompt">></span> System initialized successfully</div>
+                                <div class="terminal-line"><span class="terminal-prompt">></span> Type 'help' to see available commands</div>
+                            </div>
+                            <div class="terminal-input">
+                                <span class="terminal-prompt">$</span>
+                                <div class="input-wrapper">
+                                    <input type="text" id="terminal-input" autocomplete="off">
+                                    <div class="terminal-cursor"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `,
+            projects: `
+                <div class="window">
+                    <div class="title-bar">
+                        <div class="window-icon">📁</div>
+                        <div class="title-text">PROJECTS</div>
+                        <div class="window-controls">
+                            <div class="control-btn minimize"></div>
+                            <div class="control-btn maximize"></div>
+                            <div class="control-btn close"></div>
+                        </div>
+                    </div>
+                    <div class="window-content">
+                        <div class="content-card">
+                            <h3>MY CURRENT PROJECTS</h3>
+                            <p>Here's what I'm currently working on:</p>
+                            <ul>
+                                <li><strong>Photography Practice:</strong> Improving my skills and building my portfolio</li>
+                                <li><strong>Web Development:</strong> Creating interactive sites like this one</li>
+                                <li><strong>Podcast Project:</strong> Starting a podcast with friends about tech and creativity</li>
+                                <li><strong>Summer Goals:</strong> Making the most of my summer before it's over ❤️</li>
+                                <li><strong>Linux Customization:</strong> Creating beautiful and functional desktop environments</li>
+                            </ul>
+                            <p style="margin-top: 15px;">I'm always exploring new creative avenues and technologies!</p>
+                        </div>
+                    </div>
+                </div>
+            `,
+            photography: `
+                <div class="window">
+                    <div class="title-bar">
+                        <div class="window-icon">📷</div>
+                        <div class="title-text">PHOTOGRAPHY</div>
+                        <div class="window-controls">
+                            <div class="control-btn minimize"></div>
+                            <div class="control-btn maximize"></div>
+                            <div class="control-btn close"></div>
+                        </div>
+                    </div>
+                    <div class="window-content">
+                        <div class="content-card">
+                            <h3>PHOTO GALLERY</h3>
+                            <p>Here are some of my Pictures from my trip to Puerto Rico:</p>
+                            <div class="photo-container">
+                                <div class="photo-scroll">
+                                    <div class="photo-item" data-src="Photo1.jpg">
+                                        <img src="Photo1.jpg" alt="Puerto Rico Beach">
+                                    </div>
+                                    <div class="photo-item" data-src="Photo2.jpg">
+                                        <img src="Photo2.jpg" alt="Puerto Rico Old Town">
+                                    </div>
+                                    <div class="photo-item" data-src="Photo3.jpg">
+                                        <img src="Photo3.jpg" alt="Puerto Rico Sunset">
+                                    </div>
+                                    <div class="photo-item" data-src="Photo4.jpg">
+                                        <img src="Photo4.jpg" alt="Puerto Rico Forest">
+                                    </div>
+                                    <div class="photo-item" data-src="Photo5.jpg">
+                                        <img src="Photo5.jpg" alt="Puerto Rico Street">
+                                    </div>
+                                    <div class="photo-item" data-src="Photo6.jpg">
+                                        <img src="Photo6.jpg" alt="Puerto Rico Ocean">
+                                    </div>
+                                    <div class="photo-item" data-src="Photo7.jpg">
+                                        <img src="Photo7.jpg" alt="Puerto Rico Mountains">
+                                    </div>
+                                    <div class="photo-item" data-src="Photo8.jpg">
+                                        <img src="Photo8.jpg" alt="Puerto Rico Harbor">
+                                    </div>
+                                    <div class="photo-item" data-src="Photo9.jpg">
+                                        <img src="Photo9.jpg" alt="Puerto Rico Harbor">
+                                    </div>
+                                </div>
+                                
+                                <div class="photo-grid">
+                                    <div class="photo-item" data-src="Photo1.jpg">
+                                        <img src="Photo1.jpg" alt="Puerto Rico Beach">
+                                    </div>
+                                    <div class="photo-item" data-src="Photo2.jpg">
+                                        <img src="Photo2.jpg" alt="Puerto Rico Old Town">
+                                    </div>
+                                    <div class="photo-item" data-src="Photo3.jpg">
+                                        <img src="Photo3.jpg" alt="Puerto Rico Sunset">
+                                    </div>
+                                    <div class="photo-item" data-src="Photo4.jpg">
+                                        <img src="Photo4.jpg" alt="Puerto Rico Forest">
+                                    </div>
+                                    <div class="photo-item" data-src="Photo5.jpg">
+                                        <img src="Photo5.jpg" alt="Puerto Rico Street">
+                                    </div>
+                                    <div class="photo-item" data-src="Photo6.jpg">
+                                        <img src="Photo6.jpg" alt="Puerto Rico Ocean">
+                                    </div>
+                                    <div class="photo-item" data-src="Photo7.jpg">
+                                        <img src="Photo7.jpg" alt="Puerto Rico Mountains">
+                                    </div>
+                                    <div class="photo-item" data-src="Photo8.jpg">
+                                        <img src="Photo8.jpg" alt="Puerto Rico Harbor">
+                                    </div>
+                                    <div class="photo-item" data-src="Photo9.jpg">
+                                        <img src="Photo9.jpg" alt="Puerto Rico Harbor">
+                                    </div>
+                                </div>
+                            </div>
+                            <p style="margin-top: 15px;"><a href="https://adobe.ly/4jCPn1R" style="color: var(--dark); font-weight: bold;">See More Here</a></p>
+                        </div>
+                    </div>
+                </div>
+            `,
+            about: `
+                <div class="window">
+                    <div class="title-bar">
+                        <div class="window-icon">👤</div>
+                        <div class="title-text">ABOUT ME</div>
+                        <div class="window-controls">
+                            <div class="control-btn minimize"></div>
+                            <div class="control-btn maximize"></div>
+                            <div class="control-btn close"></div>
+                        </div>
+                    </div>
+                    <div class="window-content">
+                        <div class="content-card">
+                            <h3>ABOUT YOMI</h3>
+                            <p>Hi, I'm Yomi!!! I do various design things like:</p>
+                            <ul>
+                                <li>Web and graphic design</li>
+                                <li>Linux customization and ricing</li>
+                                <li>Programming and development</li>
+                                <li>Photography practice</li>
+                            </ul>
+                            
+                            <p style="margin-top: 15px;">My interests include:</p>
+                            <ul>
+                                <li>Playing various video games</li>
+                                <li>Cute animals (I just adopted a kitten named Weasel! 🐱)</li>
+                                <li>Studio Ghibli movies (Nausicaä and Kiki are my favorites!)</li>
+                                <li>Retro technology and computing</li>
+                            </ul>
+                            
+                            <p style="margin-top: 15px;">I'm passionate about creating beautiful, functional, and nostalgic digital experiences!</p>
+                        </div>
+                    </div>
+                </div>
+            `,
+            email: `
+                <div class="window email">
+                    <div class="title-bar">
+                        <div class="window-icon">✉️</div>
+                        <div class="title-text">EMAIL CLIENT</div>
+                        <div class="window-controls">
+                            <div class="control-btn minimize"></div>
+                            <div class="control-btn maximize"></div>
+                            <div class="control-btn close"></div>
+                        </div>
+                    </div>
+                    <div class="window-content">
+                        <div class="email-container">
+                            <div class="email-output" id="email-output">
+                                <div class="email-line"><span class="email-prompt">></span> Yomi's Retro Email Client v1.0</div>
+                                <div class="email-line"><span class="email-prompt">></span> Compose your message to Yomi</div>
+                                <div class="email-line"><span class="email-prompt">></span> All fields are required</div>
+                            </div>
+                            <form id="email-form" class="email-form" action="https://formspree.io/f/xqalvagp" method="POST">
+                                <input type="text" id="email-name" class="email-input" placeholder="Your name" required>
+                                <input type="email" id="email-address" class="email-input" placeholder="Your email" required>
+                                <input type="text" id="email-subject" class="email-input" placeholder="Subject" required>
+                                <textarea id="email-message" class="email-input email-textarea" placeholder="Your message" required></textarea>
+                                <button type="submit" class="email-button">Send Message</button>
+                            </form>
+                            <div class="email-status" id="email-status"></div>
+                        </div>
+                    </div>
+                </div>
+            `
+        };
+
+        // Create initial windows - modified to not create any windows initially
+        function createInitialWindows() {
+            // No windows created at start
+            setupWindowFunctionality();
+            updateClock();
+            setInterval(updateClock, 60000);
+        }
+        
+        // Function to generate fetch output
+        function generateFetchOutput() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            const hours12 = hours % 12 || 12;
+            const timeString = `${hours12}:${minutes} ${ampm}`;
+
+            return `
+                <div class="fetch-output">
+                    <div class="fetch-line"><span class="fetch-label">User</span><span class="fetch-separator">:</span> Yomi</div>
+                    <div class="fetch-line"><span class="fetch-label">Uptime</span><span class="fetch-separator">:</span> ${timeString}</div>
+                    <div class="fetch-line"><span class="fetch-label">Distro</span><span class="fetch-separator">:</span> NixOS / Windows 10</div>
+                    <div class="fetch-line"><span class="fetch-label">Colors</span><span class="fetch-separator">:</span> 
+                        <span class="color-block" style="background: #f8c6ce;"></span>
+                        <span class="color-block" style="background: #f3ac94;"></span>
+                        <span class="color-block" style="background: #e2e1ab;"></span>
+                        <span class="color-block" style="background: #feece9;"></span>
+                        <span class="color-block" style="background: #5a3d5c;"></span>
+                    </div>
+                    <div class="fetch-line"><span class="fetch-label">CPU</span><span class="fetch-separator">:</span> i5-12400F</div>
+                    <div class="fetch-line"><span class="fetch-label">Memory</span><span class="fetch-separator">:</span> 48GB</div>
+                    <div class="fetch-line"><span class="fetch-label">GPU</span><span class="fetch-separator">:</span> RX 580</div>
+                </div>
+            `;
+        }
+
+        // Update clock in taskbar
+        function updateClock() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            const hours12 = hours % 12 || 12;
+            
+            document.getElementById('clock').textContent = `${hours12}:${minutes} ${ampm}`;
+        }
+
+        // Terminal functionality with cursor movement
+        function setupTerminal() {
+            const terminalInput = document.getElementById('terminal-input');
+            const terminalOutput = document.getElementById('terminal-output');
+            const cursor = document.querySelector('.terminal-cursor');
+            
+            if (!terminalInput) return;
+            
+            terminalInput.focus();
+            
+            // Function to update cursor position
+            function updateCursorPosition() {
+                const text = terminalInput.value;
+                const font = '1.3rem VT323';
+                
+                // Create off-screen canvas to measure text width
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                context.font = font;
+                const width = context.measureText(text).width;
+                
+                // Position cursor at end of text
+                cursor.style.left = (width + 5) + 'px';
+            }
+            
+            // Add event listeners to update cursor position
+            terminalInput.addEventListener('input', updateCursorPosition);
+            terminalInput.addEventListener('keydown', updateCursorPosition);
+            terminalInput.addEventListener('click', updateCursorPosition);
+            
+            terminalInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    const command = terminalInput.value.trim();
+                    terminalInput.value = '';
+                    updateCursorPosition(); // Update cursor after clearing input
+                    
+                    // Add command to output
+                    terminalOutput.innerHTML += `<div class="terminal-line"><span class="terminal-prompt">$</span> ${command}</div>`;
+                    
+                    // Process command
+                    let output = '';
+                    
+                    switch(command.toLowerCase()) {
+                        case 'help':
+                            output = `
+                                <div class="help-command"><span class="command-name">help</span><span class="command-desc">- Show this help message</span></div>
+                                <div class="help-command"><span class="command-name">about</span><span class="command-desc">- Open the About Me window</span></div>
+                                <div class="help-command"><span class="command-name">projects</span><span class="command-desc">- Open the Projects window</span></div>
+                                <div class="help-command"><span class="command-name">clear</span><span class="command-desc">- Clear the terminal screen</span></div>
+                                <div class="help-command"><span class="command-name">date</span><span class="command-desc">- Show current date</span></div>
+                                <div class="help-command"><span class="command-name">echo</span><span class="command-desc">- Print a message (usage: echo [message])</span></div>
+                                <div class="help-command"><span class="command-name">photos</span><span class="command-desc">- Open the photography gallery</span></div>
+                                <div class="help-command"><span class="command-name">fetch</span><span class="command-desc">- Show system information</span></div>
+                                <div class="help-command"><span class="command-name">email</span><span class="command-desc">- Open the email client</span></div>
+                            `;
+                            break;
+                        case 'im in lesbians with you':
+                            output = `Hi Zero i love you so much`;
+                            break;
+                        case 'about':
+                            output = `Opening About Me window...`;
+                            openWindow('about');
+                            break;
+                        case 'projects':
+                            output = `Opening Projects window...`;
+                            openWindow('projects');
+                            break;
+                        case 'photos':
+                            output = `Opening photography gallery...`;
+                            openWindow('photography');
+                            break;
+                        case 'email':
+                            output = `Opening email client...`;
+                            openWindow('email');
+                            break;
+                        case 'clear':
+                            terminalOutput.innerHTML = '';
+                            return;
+                        case 'date':
+                            output = new Date().toLocaleDateString();
+                            break;
+                        case 'echo':
+                            output = 'Usage: echo [text] - Example: echo hello';
+                            break;
+                        case 'fetch':
+                            output = generateFetchOutput();
+                            break;
+                        case '':
+                            output = '';
+                            break;
+                        default:
+                            if (command.toLowerCase().startsWith('echo ')) {
+                                output = command.substring(5);
+                            } else {
+                                output = `Command not found: ${command}. Type 'help' for available commands.`;
+                            }
+                    }
+                    
+                    if (output) {
+                        terminalOutput.innerHTML += `<div class="terminal-line"><span class="terminal-prompt">></span> ${output}</div>`;
+                    }
+                    
+                    // Scroll to bottom
+                    terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                }
+            });
+            
+            // Set initial cursor position
+            updateCursorPosition();
+        }
+
+        // Photo enlargement functionality
+        function setupPhotoEnlargement() {
+            const modal = document.getElementById('photo-modal');
+            const modalImg = document.getElementById('modal-image');
+            const closeModal = document.getElementById('close-modal');
+            
+            // Add event listeners to all photo items
+            document.querySelectorAll('.photo-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const imgSrc = this.getAttribute('data-src');
+                    modalImg.src = imgSrc;
+                    modal.classList.add('active');
+                });
+            });
+            
+            // Close modal
+            closeModal.addEventListener('click', function() {
+                modal.classList.remove('active');
+            });
+            
+            // Close when clicking outside image
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
+        }
+
+        function setupEmailFunctionality() {
+            const emailForm = document.getElementById('email-form');
+            const emailStatus = document.getElementById('email-status');
+            const emailOutput = document.getElementById('email-output');
+            
+            if (!emailForm) return;
+            
+            emailForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(emailForm);
+                emailStatus.textContent = "Sending message...";
+                
+                try {
+                    const response = await fetch(emailForm.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        emailStatus.textContent = "Message sent successfully!";
+                        emailForm.reset();
+                        
+                        emailOutput.innerHTML += `<div class="email-line"><span class="email-prompt">></span> Message delivered successfully</div>`;
+                        emailOutput.scrollTop = emailOutput.scrollHeight;
+                    } else {
+                        const data = await response.json();
+                        if (data.errors) {
+                            emailStatus.textContent = "Error: " + data.errors.map(error => error.message).join(", ");
+                        } else {
+                            emailStatus.textContent = "There was a problem sending your message";
+                        }
+                    }
+                } catch (error) {
+                    emailStatus.textContent = "There was a problem sending your message";
+                }
+            });
+        }
+
+        // Window functionality
+        function setupWindowFunctionality() {
+            // Make windows draggable
+            document.querySelectorAll('.window').forEach(window => {
+                const titleBar = window.querySelector('.title-bar');
+                let isDragging = false;
+                let offsetX, offsetY;
+                
+                titleBar.addEventListener('mousedown', function(e) {
+                    isDragging = true;
+                    
+                    // Get the mouse position relative to the window
+                    const rect = window.getBoundingClientRect();
+                    offsetX = e.clientX - rect.left;
+                    offsetY = e.clientY - rect.top;
+                    
+                    // Bring window to front
+                    document.querySelectorAll('.window').forEach(w => {
+                        w.style.zIndex = 1;
+                    });
+                    window.style.zIndex = 10;
+                });
+                
+                document.addEventListener('mousemove', function(e) {
+                    if (isDragging) {
+                        // Calculate new position
+                        const x = e.clientX - offsetX;
+                        const y = e.clientY - offsetY;
+                        
+                        // Apply position
+                        window.style.left = x + 'px';
+                        window.style.top = y + 'px';
+                    }
+                });
+                
+                document.addEventListener('mouseup', function() {
+                    isDragging = false;
+                });
+            });
+            
+            // Close button functionality
+            document.querySelectorAll('.close').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const window = this.closest('.window');
+                    window.style.transform = 'scale(0.9)';
+                    window.style.opacity = '0';
+                    setTimeout(() => {
+                        window.style.display = 'none';
+                    }, 300);
+                });
+            });
+            
+            // Minimize button functionality
+            document.querySelectorAll('.minimize').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const window = this.closest('.window');
+                    const content = window.querySelector('.window-content');
+                    content.style.display = content.style.display === 'none' ? 'block' : 'none';
+                });
+            });
+            
+            // Maximize button functionality
+            document.querySelectorAll('.maximize').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const window = this.closest('.window');
+                    window.classList.toggle('maximized');
+                    
+                    // For photo window, we don't need to do anything extra here
+                    // The CSS handles showing/hiding the layouts
+                });
+            });
+            
+            // Nav item interaction
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const windowType = this.getAttribute('data-window');
+                    openWindow(windowType);
+                });
+            });
+        }
+        
+        // Special function to open Welcome window and remove arrow
+        function openWelcomeWindow() {
+            openWindow('header');
+            // Remove the bouncing arrow
+            document.querySelector('.arrow-wrapper').style.display = 'none';
+        }
+        
+        // Open a window by type
+        function openWindow(type) {
+            // See if a window with this type is already open
+            const existingWindow = document.querySelector(`.window.${type}`);
+            if (existingWindow) {
+                // If it's hidden, show it
+                if (existingWindow.style.display === 'none') {
+                    existingWindow.style.display = 'block';
+                    existingWindow.style.transform = '';
+                    existingWindow.style.opacity = '';
+                }
+                
+                // Bring it to the front
+                document.querySelectorAll('.window').forEach(w => {
+                    w.style.zIndex = 1;
+                });
+                existingWindow.style.zIndex = 10;
+                return;
+            }
+
+            if (windowTemplates[type]) {
+                const container = document.querySelector('.windows-container');
+                container.insertAdjacentHTML('beforeend', windowTemplates[type]);
+
+                setupWindowFunctionality();
+
+                // Special setup for terminal
+                if (type === 'terminal') {
+                    setTimeout(() => {
+                        setupTerminal();
+                        const input = document.getElementById('terminal-input');
+                        if (input) input.focus();
+                    }, 100);
+                }
+                
+                // Setup photo enlargement for photography window
+                if (type === 'photography') {
+                    setTimeout(setupPhotoEnlargement, 100);
+                }
+                
+                // Setup email functionality for email window
+                if (type === 'email') {
+                    setTimeout(setupEmailFunctionality, 100);
+                }
+            }
+        }
+        
+        // Clear all windows
+        function clearAllWindows() {
+            document.querySelectorAll('.window').forEach(window => {
+                window.style.transform = 'scale(0.9)';
+                window.style.opacity = '0';
+                setTimeout(() => {
+                    window.style.display = 'none';
+                }, 300);
+            });
+        }
+
+        // Initialize the site
+        document.addEventListener('DOMContentLoaded', function() {
+            createInitialWindows();
+            
+            // Add event listener to Start button
+            document.getElementById('start-button').addEventListener('click', function() {
+                clearAllWindows();
+            });
+        });
+    </script>
+</body>
+</html>
