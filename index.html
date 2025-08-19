@@ -697,7 +697,7 @@
             flex: 1;
         }
         
-        /* Email window styles */
+        /* Email window styles - Dark theme like terminal */
         .email-container {
             background: var(--dark);
             color: #e2e1ab;
@@ -709,6 +709,7 @@
             box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
             display: flex;
             flex-direction: column;
+            position: relative;
         }
         
         .email-output {
@@ -725,6 +726,7 @@
         
         .email-prompt {
             color: #f3ac94;
+            font-weight: bold;
         }
         
         .email-form {
@@ -735,7 +737,7 @@
         }
         
         .email-input {
-            background: transparent;
+            background: rgba(0, 0, 0, 0.3);
             border: 1px solid #f3ac94;
             color: #e2e1ab;
             font-family: 'VT323', monospace;
@@ -760,6 +762,9 @@
             cursor: pointer;
             border-radius: 4px;
             align-self: flex-start;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
         
         .email-button:hover {
@@ -773,6 +778,58 @@
         .email-status {
             margin-top: 10px;
             color: #f3ac94;
+            font-weight: bold;
+            padding: 5px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 3px;
+            border: 1px dashed #f3ac94;
+        }
+        
+        /* Email action buttons */
+        .email-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .email-action-btn {
+            background: var(--pink);
+            border: 2px solid var(--dark);
+            color: var(--dark);
+            font-family: 'VT323', monospace;
+            font-size: 1.1rem;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .email-action-btn:hover {
+            background: var(--coral);
+        }
+        
+        /* Status bar styles */
+        .status-bar {
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            color: var(--yellow);
+            padding: 3px 8px;
+            font-size: 1rem;
+            border-top: 2px solid var(--dark);
+            border-radius: 0 0 5px 5px;
+            margin-top: 10px;
+        }
+        
+        .status-icon {
+            margin-right: 8px;
+            font-size: 1.1rem;
+        }
+        
+        .status-text {
+            flex: 1;
         }
         
         /* Updated arrow styles */
@@ -1348,12 +1405,23 @@
                                 <div class="email-line"><span class="email-prompt">></span> All fields are required</div>
                             </div>
                             <form id="email-form" class="email-form" action="https://formspree.io/f/xqalvagp" method="POST">
-                                <input type="text" id="email-name" class="email-input" placeholder="Your name" required>
-                                <input type="email" id="email-address" class="email-input" placeholder="Your email" required>
-                                <input type="text" id="email-subject" class="email-input" placeholder="Subject" required>
-                                <textarea id="email-message" class="email-input email-textarea" placeholder="Your message" required></textarea>
-                                <button type="submit" class="email-button">Send Message</button>
+                                <input type="text" id="email-name" name="name" class="email-input" placeholder="Your name" required>
+                                <input type="email" id="email-address" name="email" class="email-input" placeholder="Your email" required>
+                                <input type="text" id="email-subject" name="subject" class="email-input" placeholder="Subject" required>
+                                <textarea id="email-message" name="message" class="email-input email-textarea" placeholder="Your message" required></textarea>
+                                
+                                <div class="email-actions">
+                                    <button type="submit" class="email-button">📤 Send</button>
+                                    <button type="reset" class="email-action-btn" onclick="playSound('cancel')">❌ Cancel</button>
+                                    <button type="button" class="email-action-btn" onclick="playSound('attach')">📎 Attach</button>
+                                </div>
                             </form>
+                            
+                            <div class="status-bar">
+                                <span class="status-icon">📶</span>
+                                <span class="status-text" id="status-text">Connected to mail server...</span>
+                            </div>
+                            
                             <div class="email-status" id="email-status"></div>
                         </div>
                     </div>
@@ -1406,6 +1474,60 @@
             const hours12 = hours % 12 || 12;
             
             document.getElementById('clock').textContent = `${hours12}:${minutes} ${ampm}`;
+        }
+
+        // Play retro sound effects
+        function playSound(type) {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                switch(type) {
+                    case 'send':
+                        oscillator.type = 'sine';
+                        oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                        oscillator.start();
+                        oscillator.stop(audioContext.currentTime + 0.1);
+                        break;
+                    case 'cancel':
+                        oscillator.type = 'square';
+                        oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+                        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                        oscillator.start();
+                        oscillator.stop(audioContext.currentTime + 0.15);
+                        break;
+                    case 'attach':
+                        oscillator.type = 'sawtooth';
+                        oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
+                        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                        oscillator.start();
+                        oscillator.stop(audioContext.currentTime + 0.05);
+                        break;
+                    case 'success':
+                        oscillator.type = 'sine';
+                        oscillator.frequency.setValueAtTime(1000, audioContext.currentTime);
+                        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                        oscillator.start();
+                        oscillator.frequency.exponentialRampToValueAtTime(1500, audioContext.currentTime + 0.2);
+                        oscillator.stop(audioContext.currentTime + 0.3);
+                        break;
+                    case 'error':
+                        oscillator.type = 'square';
+                        oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
+                        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                        oscillator.start();
+                        oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.3);
+                        oscillator.stop(audioContext.currentTime + 0.4);
+                        break;
+                }
+            } catch (e) {
+                console.log("Audio context not supported:", e);
+            }
         }
 
         // Terminal functionality with cursor movement
@@ -1551,6 +1673,7 @@
             const emailForm = document.getElementById('email-form');
             const emailStatus = document.getElementById('email-status');
             const emailOutput = document.getElementById('email-output');
+            const statusText = document.getElementById('status-text');
             
             if (!emailForm) return;
             
@@ -1559,6 +1682,17 @@
                 
                 const formData = new FormData(emailForm);
                 emailStatus.textContent = "Sending message...";
+                statusText.textContent = "Sending message to server...";
+                playSound('send');
+                
+                // Simulate connection delay
+                setTimeout(() => {
+                    statusText.textContent = "Connecting to mail server...";
+                }, 800);
+                
+                setTimeout(() => {
+                    statusText.textContent = "Transferring data...";
+                }, 1600);
                 
                 try {
                     const response = await fetch(emailForm.action, {
@@ -1570,13 +1704,22 @@
                     });
                     
                     if (response.ok) {
+                        statusText.textContent = "Message sent successfully!";
                         emailStatus.textContent = "Message sent successfully!";
                         emailForm.reset();
+                        playSound('success');
                         
                         emailOutput.innerHTML += `<div class="email-line"><span class="email-prompt">></span> Message delivered successfully</div>`;
                         emailOutput.scrollTop = emailOutput.scrollHeight;
+                        
+                        // Reset status after a delay
+                        setTimeout(() => {
+                            statusText.textContent = "Connected to mail server...";
+                        }, 3000);
                     } else {
                         const data = await response.json();
+                        statusText.textContent = "Error sending message!";
+                        playSound('error');
                         if (data.errors) {
                             emailStatus.textContent = "Error: " + data.errors.map(error => error.message).join(", ");
                         } else {
@@ -1584,6 +1727,8 @@
                         }
                     }
                 } catch (error) {
+                    statusText.textContent = "Connection failed!";
+                    playSound('error');
                     emailStatus.textContent = "There was a problem sending your message";
                 }
             });
