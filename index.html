@@ -282,11 +282,13 @@
             box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
             display: flex;
             flex-direction: column;
+            max-height: 400px;
         }
         
         .terminal-output {
             flex: 1;
-            overflow-y: auto;
+            overflow-y: scroll;
+            padding-right: 5px;
         }
         
         .terminal-line {
@@ -531,7 +533,32 @@
             display: flex;
             flex-direction: column;
         }
-        
+        /* Enhanced rounded scrollbar for terminal */
+    .terminal-output::-webkit-scrollbar {
+        width: 10px;
+    }
+
+    .terminal-output::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        margin: 5px;
+    }
+
+    .terminal-output::-webkit-scrollbar-thumb {
+        background: var(--coral);
+        border-radius: 10px;
+        border: 2px solid rgba(0, 0, 0, 0.2);
+    }
+
+    .terminal-output::-webkit-scrollbar-thumb:hover {
+        background: var(--pink);
+    }
+
+    /* Firefox support */
+    .terminal-output {
+        scrollbar-width: thin;
+        scrollbar-color: var(--coral) rgba(0, 0, 0, 0.1);
+    }
         /* Horizontal layout for non-maximized window */
         .photo-scroll {
             display: flex;
@@ -607,7 +634,23 @@
             object-fit: cover;
             display: block;
         }
-        
+        .terminal-output::-webkit-scrollbar {
+    width: 8px;
+        }
+
+        .terminal-output::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+
+        .terminal-output::-webkit-scrollbar-thumb {
+            background: var(--coral);
+            border-radius: 4px;
+        }
+
+        .terminal-output::-webkit-scrollbar-thumb:hover {
+            background: var(--pink);
+        }
         /* Photo modal styles */
         .photo-modal {
             position: fixed;
