@@ -1,4 +1,4 @@
 mkdir converted
-for %%f in (photo1.jpg photo2.jpg photo3.jpg photo4.jpg photo5.jpg photo6.jpg photo7.jpg photo8.jpg photo9.jpg) do (
-  ffmpeg -i "%%f" "converted/%%~nf.png"
+for %%f in (photo1.png photo2.png photo3.png photo4.png photo5.png photo6.png photo7.png photo8.png photo9.png) do (
+  ffmpeg -i "%%f" "converted/%%~nf.webp"
 )
