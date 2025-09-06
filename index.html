@@ -7,7 +7,6 @@
     <link rel="icon" href="favicon.png" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
     <style>
-        /* Your existing CSS remains unchanged */
         * {
             margin: 0;
             padding: 0;
@@ -81,6 +80,12 @@
             height: 25px;
             border-bottom: 2px solid var(--dark);
             border-radius: 6px 6px 0 0;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
         
         .window-icon {
@@ -760,6 +765,7 @@
             flex: 1;
             overflow-y: auto;
             margin-bottom: 10px;
+            padding-right: 5px;
         }
         
         .email-line {
@@ -919,6 +925,33 @@
         @keyframes pulse {
             0%, 100% { opacity: 0.8; }
             50% { opacity: 1; }
+        }
+        
+        /* Make controls easier to tap on mobile */
+        .control-btn, .taskbar-item, .start-button, .desktop-icon, .nav-item {
+            touch-action: manipulation; /* Prevents double-tap zoom */
+        }
+        
+        /* Increase hit area for touch devices */
+        @media (max-width: 900px) {
+            .control-btn {
+                width: 22px;
+                height: 20px;
+            }
+            
+            .taskbar-item, .start-button {
+                min-height: 36px;
+                padding: 0 12px;
+            }
+            
+            .desktop-icon {
+                min-width: 70px;
+                min-height: 70px;
+            }
+            
+            .nav-item {
+                padding: 20px;
+            }
         }
         
         /* Responsive adjustments */
@@ -1778,7 +1811,7 @@
             });
         }
 
-        // Window functionality
+        // Window functionality with touch support for mobile
         function setupWindowFunctionality() {
             // Make windows draggable
             document.querySelectorAll('.window').forEach(window => {
@@ -1786,34 +1819,72 @@
                 let isDragging = false;
                 let offsetX, offsetY;
                 
+                // Mouse event handlers
                 titleBar.addEventListener('mousedown', function(e) {
+                    startDrag(e.clientX, e.clientY);
+                });
+                
+                // Touch event handlers for mobile
+                titleBar.addEventListener('touchstart', function(e) {
+                    // Prevent default to avoid scrolling while dragging
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    startDrag(touch.clientX, touch.clientY);
+                }, { passive: false });
+                
+                function startDrag(clientX, clientY) {
                     isDragging = true;
                     
-                    // Get the mouse position relative to the window
+                    // Get the position relative to the window
                     const rect = window.getBoundingClientRect();
-                    offsetX = e.clientX - rect.left;
-                    offsetY = e.clientY - rect.top;
+                    offsetX = clientX - rect.left;
+                    offsetY = clientY - rect.top;
                     
                     // Bring window to front
                     document.querySelectorAll('.window').forEach(w => {
                         w.style.zIndex = 1;
                     });
                     window.style.zIndex = 10;
-                });
+                }
                 
+                // Mouse move handler
                 document.addEventListener('mousemove', function(e) {
                     if (isDragging) {
-                        // Calculate new position
-                        const x = e.clientX - offsetX;
-                        const y = e.clientY - offsetY;
-                        
-                        // Apply position
-                        window.style.left = x + 'px';
-                        window.style.top = y + 'px';
+                        moveWindow(e.clientX, e.clientY);
                     }
                 });
                 
+                // Touch move handler for mobile
+                document.addEventListener('touchmove', function(e) {
+                    if (isDragging) {
+                        const touch = e.touches[0];
+                        moveWindow(touch.clientX, touch.clientY);
+                        
+                        // Prevent scrolling while dragging
+                        e.preventDefault();
+                    }
+                }, { passive: false });
+                
+                function moveWindow(clientX, clientY) {
+                    // Calculate new position
+                    const x = clientX - offsetX;
+                    const y = clientY - offsetY;
+                    
+                    // Apply position
+                    window.style.left = x + 'px';
+                    window.style.top = y + 'px';
+                }
+                
+                // End drag events
                 document.addEventListener('mouseup', function() {
+                    isDragging = false;
+                });
+                
+                document.addEventListener('touchend', function() {
+                    isDragging = false;
+                });
+                
+                document.addEventListener('touchcancel', function() {
                     isDragging = false;
                 });
             });
